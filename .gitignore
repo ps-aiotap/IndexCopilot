@@ -1,0 +1,63 @@
+# Environment variables
+.env
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+.env/
+.python-version
+
+# Streamlit specific
+.streamlit/
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Generated files
+*.log
+portfolio.json
+
+# Third-party libraries and dependencies
+lib/
+libs/
+lib64/
+site-packages/
+*.egg
+pip-log.txt
+pip-delete-this-directory.txt
+*.manifest
+*.spec
+wheels/
+share/python-wheels/
+develop-eggs/
+downloads/
+eggs/
+parts/
+sdist/
+var/
+node_modules/
+bower_components/
+.installed.cfg
+MANIFEST
