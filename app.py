@@ -15,6 +15,14 @@ st.set_page_config(
 # Initialize session state
 if "portfolio" not in st.session_state:
     st.session_state.portfolio = {"name": "My Portfolio", "holdings": []}
+    
+    # Auto-load portfolio from file on first run
+    if os.path.exists("portfolio.json"):
+        try:
+            with open("portfolio.json", "r") as f:
+                st.session_state.portfolio = json.load(f)
+        except Exception as e:
+            st.error(f"Error loading portfolio: {str(e)}")
 
 # App title and description
 st.title("IndexCopilot")
@@ -25,54 +33,88 @@ st.markdown("---")
 # Function to generate PDF report
 def generate_pdf(portfolio):
     try:
-        from fpdf import FPDF
+        from reportlab.pdfgen import canvas
+        from reportlab.lib.pagesizes import letter
+        from reportlab.lib import colors
+        from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+        from reportlab.lib.styles import getSampleStyleSheet
+        from reportlab.lib.units import inch
+        from reportlab.pdfbase import pdfmetrics
+        from reportlab.pdfbase.ttfonts import TTFont
 
-        pdf = FPDF()
-        pdf.add_page()
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=letter)
+        styles = getSampleStyleSheet()
+        
+        # Try to register a Unicode-capable font
+        unicode_font_registered = False
+        font_paths = [
+            'C:/Windows/Fonts/arial.ttf',  # Windows
+            '/System/Library/Fonts/Arial.ttf',  # macOS
+            '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',  # Linux
+        ]
+        
+        for font_path in font_paths:
+            try:
+                if os.path.exists(font_path):
+                    pdfmetrics.registerFont(TTFont('UnicodeFont', font_path))
+                    styles['Normal'].fontName = 'UnicodeFont'
+                    styles['Title'].fontName = 'UnicodeFont'
+                    styles['Heading2'].fontName = 'UnicodeFont'
+                    unicode_font_registered = True
+                    break
+            except:
+                continue
+            
+        story = []
 
         # Title
-        pdf.set_font("Arial", "B", 16)
-        pdf.cell(0, 10, f"Portfolio Report: {portfolio['name']}", ln=True, align="C")
-        pdf.ln(10)
+        title = Paragraph(f"Portfolio Report: {portfolio['name']}", styles['Title'])
+        story.append(title)
+        story.append(Spacer(1, 12))
 
         # Portfolio summary
-        pdf.set_font("Arial", "B", 12)
-        pdf.cell(0, 10, "Portfolio Summary", ln=True)
-        pdf.set_font("Arial", "", 10)
-
-        total_value = sum(
-            h["quantity"] * h["current_price"] for h in portfolio["holdings"]
-        )
-        pdf.cell(0, 10, f"Total Value: ₹{total_value:,.2f}", ln=True)
-        pdf.cell(0, 10, f"Number of Holdings: {len(portfolio['holdings'])}", ln=True)
-        pdf.ln(5)
+        total_value = sum(h["quantity"] * h["current_price"] for h in portfolio["holdings"])
+        currency = "₹" if unicode_font_registered else "Rs."
+        summary = Paragraph(f"<b>Total Value:</b> {currency}{total_value:,.2f}<br/><b>Number of Holdings:</b> {len(portfolio['holdings'])}", styles['Normal'])
+        story.append(summary)
+        story.append(Spacer(1, 12))
 
         # Holdings table
-        pdf.set_font("Arial", "B", 12)
-        pdf.cell(0, 10, "Holdings", ln=True)
-        pdf.set_font("Arial", "B", 10)
+        holdings_title = Paragraph("<b>Holdings</b>", styles['Heading2'])
+        story.append(holdings_title)
+        story.append(Spacer(1, 6))
 
-        # Table header
-        pdf.cell(60, 10, "Asset Name", border=1)
-        pdf.cell(30, 10, "Type", border=1)
-        pdf.cell(30, 10, "Quantity", border=1)
-        pdf.cell(30, 10, "Price", border=1)
-        pdf.cell(40, 10, "Value", border=1, ln=True)
-
-        # Table rows
-        pdf.set_font("Arial", "", 10)
+        # Table data
+        data = [['Asset Name', 'Type', 'Quantity', 'Price', 'Value']]
         for holding in portfolio["holdings"]:
             value = holding["quantity"] * holding["current_price"]
-            pdf.cell(60, 10, holding["asset_name"][:25], border=1)
-            pdf.cell(30, 10, holding["asset_type"], border=1)
-            pdf.cell(30, 10, f"{holding['quantity']}", border=1)
-            pdf.cell(30, 10, f"₹{holding['current_price']:,.2f}", border=1)
-            pdf.cell(40, 10, f"₹{value:,.2f}", border=1, ln=True)
+            data.append([
+                holding["asset_name"][:25],
+                holding["asset_type"],
+                f"{holding['quantity']:.2f}",
+                f"{currency}{holding['current_price']:,.2f}",
+                f"{currency}{value:,.2f}"
+            ])
 
-        # Generate PDF in memory
-        pdf_output = BytesIO()
-        pdf.output(pdf_output)
-        pdf_data = pdf_output.getvalue()
+        table = Table(data)
+        font_name = 'UnicodeFont' if unicode_font_registered else 'Helvetica'
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), font_name),
+            ('FONTNAME', (0, 1), (-1, -1), font_name),
+            ('FONTSIZE', (0, 0), (-1, 0), 12),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ]))
+        story.append(table)
+
+        doc.build(story)
+        pdf_data = buffer.getvalue()
+        buffer.close()
 
         return pdf_data
     except Exception as e:
@@ -285,13 +327,14 @@ if st.button("Save Portfolio"):
     except Exception as e:
         st.error(f"Error saving portfolio: {str(e)}")
 
-# Load portfolio from file
+# Manual reload button (optional)
 if os.path.exists("portfolio.json"):
-    if st.button("Load Saved Portfolio"):
+    if st.button("Reload Portfolio from File"):
         try:
             with open("portfolio.json", "r") as f:
                 st.session_state.portfolio = json.load(f)
-            st.success("Portfolio loaded from file")
+            st.success("Portfolio reloaded from file")
+            st.rerun()
         except Exception as e:
             st.error(f"Error loading portfolio: {str(e)}")
 
