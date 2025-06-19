@@ -1,6 +1,6 @@
 # IndexCopilot
 
-A simple portfolio manager for Indian index funds.
+A simple portfolio manager.
 
 ## Overview
 
@@ -18,6 +18,7 @@ IndexCopilot is a Streamlit-based application that helps users manage and visual
 ## Installation
 
 1. Clone the repository:
+
    ```
    git clone https://github.com/yourusername/IndexCopilot.git
    cd IndexCopilot
@@ -31,6 +32,7 @@ IndexCopilot is a Streamlit-based application that helps users manage and visual
 ## Usage
 
 1. Run the Streamlit application:
+
    ```
    streamlit run app.py
    ```
@@ -38,10 +40,12 @@ IndexCopilot is a Streamlit-based application that helps users manage and visual
 2. Open your browser and navigate to `http://localhost:8501`
 
 3. Add holdings to your portfolio:
+
    - Upload a CSV file with your holdings
    - Add holdings manually
 
 4. View your portfolio analytics:
+
    - Total value
    - Asset allocation
    - Holdings breakdown
@@ -61,6 +65,7 @@ equity,RELIANCE,Reliance Industries Ltd,10,2500.0,2023-02-20
 ```
 
 Required columns:
+
 - `asset_type`: Type of asset (mutual_fund, equity, insurance)
 - `asset_id`: Fund code or stock symbol
 - `asset_name`: Name of the asset
