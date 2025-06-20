@@ -24,6 +24,27 @@ if "portfolio" not in st.session_state:
         except Exception as e:
             st.error(f"Error loading portfolio: {str(e)}")
 
+
+
+# Sidebar for settings
+with st.sidebar:
+    st.header("Settings")
+    
+    # Dark mode toggle (note: limited support in Streamlit)
+    dark_mode = st.toggle("🌙 Dark Mode", value=False)
+    if dark_mode:
+        st.info("💡 Dark mode is enabled. Note: Streamlit has limited dark mode support.")
+    
+    st.markdown("---")
+    
+    # Quick stats in sidebar
+    if st.session_state.portfolio["holdings"]:
+        st.subheader("Quick Stats")
+        total_holdings = len(st.session_state.portfolio["holdings"])
+        total_value = sum(h["quantity"] * h["current_price"] for h in st.session_state.portfolio["holdings"])
+        st.metric("Holdings", total_holdings)
+        st.metric("Portfolio Value", f"₹{total_value:,.0f}")
+
 # App title and description
 st.title("IndexCopilot")
 st.markdown("### Portfolio Manager")
@@ -123,16 +144,22 @@ def generate_pdf(portfolio):
 
 
 # Main content area with tabs
-tab1, tab2 = st.tabs(["Portfolio", "Add Holdings"])
+tab1, tab2, tab3, tab4 = st.tabs(["Portfolio Summary", "Add Holdings", "Analytics", "Reports"])
 
 with tab1:
     st.subheader("My Portfolio")
 
-    # Portfolio name
-    portfolio_name = st.text_input(
-        "Portfolio Name", value=st.session_state.portfolio["name"]
-    )
-    st.session_state.portfolio["name"] = portfolio_name
+    # Inline editable portfolio name
+    col1, col2 = st.columns([4, 1])
+    with col1:
+        portfolio_name = st.text_input(
+            "Portfolio Name", value=st.session_state.portfolio["name"], key="portfolio_name_input"
+        )
+        st.session_state.portfolio["name"] = portfolio_name
+    with col2:
+        st.markdown("<br>", unsafe_allow_html=True)
+        if st.button("✏️ Edit"):
+            st.info("Click in the text field above to edit the portfolio name")
 
     # Display holdings if available
     if st.session_state.portfolio["holdings"]:
@@ -157,8 +184,29 @@ with tab1:
         # Display holdings table
         st.subheader("Holdings")
 
-        # Add value column
+        # Add value and gain/loss columns
         holdings_df["value"] = holdings_df["quantity"] * holdings_df["current_price"]
+        holdings_df["gain_loss"] = (holdings_df["current_price"] - holdings_df["purchase_price"]) * holdings_df["quantity"]
+        
+        # Add gain/loss indicators with colors
+        def format_gain_loss(value):
+            if value > 0:
+                return f"▲ ₹{value:,.2f}"
+            elif value < 0:
+                return f"▼ ₹{abs(value):,.2f}"
+            else:
+                return f"₹{value:,.2f}"
+        
+        holdings_df["gain_loss_formatted"] = holdings_df["gain_loss"].apply(format_gain_loss)
+        
+        # Create a custom display for gain/loss with colors
+        for idx, row in holdings_df.iterrows():
+            if row['gain_loss'] > 0:
+                holdings_df.at[idx, 'gain_loss_display'] = f":green[▲ ₹{row['gain_loss']:,.2f}]"
+            elif row['gain_loss'] < 0:
+                holdings_df.at[idx, 'gain_loss_display'] = f":red[▼ ₹{abs(row['gain_loss']):,.2f}]"
+            else:
+                holdings_df.at[idx, 'gain_loss_display'] = f"₹{row['gain_loss']:,.2f}"
 
         # Display as table
         st.dataframe(
@@ -176,6 +224,7 @@ with tab1:
                 ),
                 "purchase_date": st.column_config.TextColumn("Purchase Date"),
                 "value": st.column_config.NumberColumn("Value", format="₹%.2f"),
+                "gain_loss_display": st.column_config.TextColumn("Gain/Loss"),
             },
             hide_index=True,
             use_container_width=True,
@@ -183,46 +232,50 @@ with tab1:
 
         # Asset allocation chart
         st.subheader("Asset Allocation")
-
-        # Group by asset type
-        asset_allocation = holdings_df.groupby("asset_type")["value"].sum()
-
-        # Create pie chart
-        fig, ax = plt.subplots(figsize=(8, 6))
-        ax.pie(
-            asset_allocation,
-            labels=asset_allocation.index,
-            autopct="%1.1f%%",
-            startangle=90,
-        )
-        ax.axis("equal")
-        st.pyplot(fig)
-
-        # Export options
-        st.subheader("Export Portfolio")
-        col1, col2 = st.columns(2)
-
-        with col1:
-            # Export to CSV
-            csv = holdings_df.to_csv(index=False)
-            st.download_button(
-                label="Download CSV",
-                data=csv,
-                file_name=f"{portfolio_name.replace(' ', '_')}_portfolio.csv",
-                mime="text/csv",
-            )
-
+        
+        # Center the chart with limited width
+        col1, col2, col3 = st.columns([1, 2, 1])
         with col2:
-            # Export to PDF
-            if st.button("Generate PDF Report"):
-                pdf_data = generate_pdf(st.session_state.portfolio)
-                if pdf_data:
-                    st.download_button(
-                        label="Download PDF Report",
-                        data=pdf_data,
-                        file_name=f"{portfolio_name.replace(' ', '_')}_report.pdf",
-                        mime="application/pdf",
-                    )
+            # Group by asset type
+            asset_allocation = holdings_df.groupby("asset_type")["value"].sum()
+            
+            # Create doughnut chart
+            fig, ax = plt.subplots(figsize=(6, 6))
+            
+            # Create labels with percentage and amount
+            labels = []
+            for asset_type, value in asset_allocation.items():
+                percentage = (value / total_value) * 100
+                labels.append(f"{asset_type}: {percentage:.1f}% - ₹{value:,.0f}")
+            
+            wedges, texts, autotexts = ax.pie(
+                asset_allocation,
+                labels=labels,
+                autopct="",
+                startangle=90,
+                pctdistance=0.85,
+                wedgeprops=dict(width=0.5)
+            )
+            
+            # Add center text
+            ax.text(0, 0, f"Total\n₹{total_value:,.0f}", 
+                   horizontalalignment='center', verticalalignment='center',
+                   fontsize=12, fontweight='bold')
+            
+            ax.axis("equal")
+            plt.tight_layout()
+            st.pyplot(fig)
+            
+            # Add legend with matching colors
+            st.markdown("**Asset Breakdown:**")
+            for i, (asset_type, value) in enumerate(asset_allocation.items()):
+                percentage = (value / total_value) * 100
+                # Get the actual color from the wedge
+                color = wedges[i].get_facecolor()
+                color_hex = f"#{int(color[0]*255):02x}{int(color[1]*255):02x}{int(color[2]*255):02x}"
+                st.markdown(f"<span style='color: {color_hex}'>●</span> **{asset_type}**: {percentage:.1f}% (₹{value:,.2f})", unsafe_allow_html=True)
+
+
     else:
         st.info(
             "No holdings in your portfolio yet. Add holdings in the 'Add Holdings' tab."
@@ -237,16 +290,29 @@ with tab2:
     if method == "Upload CSV":
         st.write("Upload a CSV file with your holdings")
 
-        # Example CSV format
-        st.markdown(
-            """
-        **CSV Format Example:**
-        ```
-        asset_type,asset_id,asset_name,quantity,purchase_price,purchase_date
-        mutual fund,HDFC123,HDFC Nifty 50 Index Fund,100,150.0,2023-01-15
-        equity,RELIANCE,Reliance Industries Ltd,10,2500.0,2023-02-20
-        ```
-        """
+        # CSV format instructions with styled table
+        st.markdown("**CSV Format Requirements:**")
+        
+        # Sample CSV data
+        sample_data = {
+            "asset_type": ["mutual_fund", "equity", "insurance"],
+            "asset_id": ["HDFC123", "RELIANCE", "LIC001"],
+            "asset_name": ["HDFC Nifty 50 Index Fund", "Reliance Industries Ltd", "LIC Term Plan"],
+            "quantity": [100, 10, 1],
+            "purchase_price": [150.0, 2500.0, 50000.0],
+            "purchase_date": ["2023-01-15", "2023-02-20", "2023-03-10"]
+        }
+        
+        sample_df = pd.DataFrame(sample_data)
+        st.dataframe(sample_df, use_container_width=True)
+        
+        # Download sample CSV button
+        sample_csv = sample_df.to_csv(index=False)
+        st.download_button(
+            label="💾 Download Sample CSV",
+            data=sample_csv,
+            file_name="sample_portfolio.csv",
+            mime="text/csv",
         )
 
         uploaded_file = st.file_uploader("Upload CSV file", type="csv")
@@ -273,7 +339,7 @@ with tab2:
                     # Update session state
                     st.session_state.portfolio["holdings"] = holdings
 
-                    st.success(f"Loaded {len(holdings)} holdings from CSV")
+                    st.success(f"✓ Successfully loaded {len(holdings)} holdings from CSV!")
                 else:
                     st.error(
                         "CSV must contain asset_type, asset_id, asset_name, quantity, and purchase_price columns"
@@ -314,29 +380,96 @@ with tab2:
                     # Add to session state
                     st.session_state.portfolio["holdings"].append(new_holding)
 
-                    st.success(f"Added {asset_name} to portfolio")
+                    st.success(f"✓ Successfully added {asset_name} to portfolio!")
                 else:
                     st.error("Please fill in all required fields")
 
-# Save portfolio to file
-if st.button("Save Portfolio"):
-    try:
-        with open("portfolio.json", "w") as f:
-            json.dump(st.session_state.portfolio, f)
-        st.success("Portfolio saved to file")
-    except Exception as e:
-        st.error(f"Error saving portfolio: {str(e)}")
+# Move export and save options to Reports tab
+with tab3:
+    st.subheader("Analytics")
+    
+    if st.session_state.portfolio["holdings"]:
+        holdings_df = pd.DataFrame(st.session_state.portfolio["holdings"])
+        holdings_df["value"] = holdings_df["quantity"] * holdings_df["current_price"]
+        holdings_df["gain_loss"] = (holdings_df["current_price"] - holdings_df["purchase_price"]) * holdings_df["quantity"]
+        
+        # Portfolio performance metrics
+        col1, col2, col3, col4 = st.columns(4)
+        
+        total_investment = sum(h["quantity"] * h["purchase_price"] for h in st.session_state.portfolio["holdings"])
+        total_current_value = sum(h["quantity"] * h["current_price"] for h in st.session_state.portfolio["holdings"])
+        total_gain_loss = total_current_value - total_investment
+        gain_loss_percentage = (total_gain_loss / total_investment) * 100 if total_investment > 0 else 0
+        
+        with col1:
+            st.metric("Total Investment", f"₹{total_investment:,.2f}")
+        with col2:
+            st.metric("Current Value", f"₹{total_current_value:,.2f}")
+        with col3:
+            delta_color = "normal" if total_gain_loss >= 0 else "inverse"
+            st.metric("Total Gain/Loss", f"₹{total_gain_loss:,.2f}", f"{gain_loss_percentage:.2f}%", delta_color=delta_color)
+        with col4:
+            best_performer = holdings_df.loc[holdings_df['gain_loss'].idxmax()]
+            st.metric("Best Performer", best_performer['asset_name'][:15], f"₹{best_performer['gain_loss']:,.2f}")
+    else:
+        st.info("Add holdings to view analytics")
 
-# Manual reload button (optional)
-if os.path.exists("portfolio.json"):
-    if st.button("Reload Portfolio from File"):
-        try:
-            with open("portfolio.json", "r") as f:
-                st.session_state.portfolio = json.load(f)
-            st.success("Portfolio reloaded from file")
-            st.rerun()
-        except Exception as e:
-            st.error(f"Error loading portfolio: {str(e)}")
+with tab4:
+    st.subheader("Reports & Export")
+    
+    if st.session_state.portfolio["holdings"]:
+        # Export options
+        col1, col2 = st.columns(2)
+
+        with col1:
+            # Export to CSV
+            holdings_df = pd.DataFrame(st.session_state.portfolio["holdings"])
+            csv = holdings_df.to_csv(index=False)
+            st.download_button(
+                label="📊 Download CSV Report",
+                data=csv,
+                file_name=f"{st.session_state.portfolio['name'].replace(' ', '_')}_portfolio.csv",
+                mime="text/csv",
+            )
+
+        with col2:
+            # Export to PDF
+            if st.button("📄 Generate PDF Report"):
+                pdf_data = generate_pdf(st.session_state.portfolio)
+                if pdf_data:
+                    st.download_button(
+                        label="Download PDF Report",
+                        data=pdf_data,
+                        file_name=f"{st.session_state.portfolio['name'].replace(' ', '_')}_report.pdf",
+                        mime="application/pdf",
+                    )
+    else:
+        st.info("Add holdings to generate reports")
+    
+    st.markdown("---")
+    
+    # Save/Load portfolio
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        if st.button("💾 Save Portfolio"):
+            try:
+                with open("portfolio.json", "w") as f:
+                    json.dump(st.session_state.portfolio, f)
+                st.success("✓ Portfolio saved successfully!")
+            except Exception as e:
+                st.error(f"Error saving portfolio: {str(e)}")
+    
+    with col2:
+        if os.path.exists("portfolio.json"):
+            if st.button("🔄 Reload Portfolio"):
+                try:
+                    with open("portfolio.json", "r") as f:
+                        st.session_state.portfolio = json.load(f)
+                    st.success("✓ Portfolio reloaded successfully!")
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"Error loading portfolio: {str(e)}")
 
 # Footer
 st.markdown("---")

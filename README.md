@@ -8,12 +8,25 @@ IndexCopilot is a Streamlit-based application that helps users manage and visual
 
 ## Features
 
-- Portfolio management with visual analytics
-- CSV upload for bulk import of holdings
-- Manual entry of individual holdings
-- Asset allocation visualization
-- Export to CSV and PDF
-- Local file storage for portfolio data
+### Portfolio Management
+- **Gain/Loss Tracking**: Real-time profit/loss calculation with visual indicators (▲/▼)
+- **CAGR Analysis**: Compound Annual Growth Rate calculation per asset
+- **Interactive Dashboard**: 4-tab modular interface (Portfolio Summary, Add Holdings, Analytics, Reports)
+- **Asset Allocation**: Doughnut chart with center totals and color-matched legends
+- **Performance Metrics**: Total investment vs current value with percentage gains
+
+### Data Management
+- **Enhanced CSV Upload**: Robust validation with pandas-based error checking
+- **Manual Entry**: Individual holding addition with comprehensive validation
+- **Auto-save/Load**: Automatic portfolio persistence with success notifications
+- **Export Options**: CSV and PDF reports with Unicode currency support
+
+### User Experience
+- **Modular Architecture**: Clean separation of concerns with testable components
+- **Sidebar Stats**: Quick portfolio overview and settings
+- **Color-coded Display**: Green/red indicators for gains and losses
+- **Responsive Layout**: Organized tabs with centered charts and proper spacing
+- **Dark Mode Toggle**: Basic theme switching capability
 
 ## Installation
 
@@ -34,25 +47,28 @@ IndexCopilot is a Streamlit-based application that helps users manage and visual
 1. Run the Streamlit application:
 
    ```
+   # Run the new modular version (recommended)
+   streamlit run app_modular.py
+   
+   # Or run the original version
    streamlit run app.py
    ```
 
 2. Open your browser and navigate to `http://localhost:8501`
 
 3. Add holdings to your portfolio:
-
-   - Upload a CSV file with your holdings
-   - Add holdings manually
+   - **Upload CSV**: Use the sample CSV download or follow the format guide
+   - **Manual Entry**: Add individual holdings with the form
 
 4. View your portfolio analytics:
+   - **Portfolio Summary**: Holdings table with gain/loss indicators
+   - **Analytics**: Performance metrics and best/worst performers
+   - **Asset Allocation**: Interactive doughnut chart with detailed breakdown
 
-   - Total value
-   - Asset allocation
-   - Holdings breakdown
-
-5. Export your portfolio:
-   - Download as CSV
-   - Generate PDF report
+5. Export and manage:
+   - **Reports Tab**: Download CSV or generate PDF reports
+   - **Auto-save**: Portfolio automatically loads on startup
+   - **Settings**: Access dark mode and quick stats in sidebar
 
 ## CSV Format
 
@@ -75,9 +91,56 @@ Required columns:
 
 ## Project Structure
 
-- `app.py`: Streamlit UI and main application logic
-- `requirements.txt`: Python dependencies
-- `portfolio.json`: Local storage for portfolio data (created when saving)
+```
+IndexCopilot/
+├── src/
+│   ├── utils/
+│   │   ├── portfolio_manager.py    # Portfolio data management and calculations
+│   │   └── export_manager.py       # CSV/PDF export functionality
+│   └── tabs/
+│       ├── summary.py              # Portfolio Summary tab
+│       ├── add_holdings.py         # Add Holdings tab with CSV validation
+│       ├── analytics.py            # Analytics tab with CAGR calculations
+│       └── reports.py              # Reports & Export tab
+├── tests/
+│   ├── test_portfolio_manager.py # Unit tests for portfolio logic
+│   └── test_export_manager.py    # Unit tests for export functionality
+├── app.py                      # Original monolithic app (legacy)
+├── app_modular.py              # New modular app entry point
+├── requirements.txt            # Python dependencies
+├── portfolio.json              # Auto-loading portfolio data storage
+└── README.md                   # Project documentation
+```
+
+## Testing
+
+Run the test suite:
+
+```bash
+# Run all tests
+pytest tests/
+
+# Run with verbose output
+pytest tests/ -v
+
+# Run specific test file
+pytest tests/test_portfolio_manager.py
+```
+
+## Development
+
+### Key Components
+
+- **PortfolioManager**: Handles data persistence, validation, and calculations
+- **ExportManager**: Manages CSV and PDF export functionality
+- **Tab Components**: Modular UI components for each application section
+
+### Adding New Features
+
+1. Add business logic to appropriate manager class
+2. Create/update tab component
+3. Add unit tests
+4. Update main app routing
 
 ## License
 
