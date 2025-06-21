@@ -39,6 +39,14 @@ Thumbs.db
 *.log
 portfolio.json
 
+# Playwright test artifacts
+playwright-tests/generated/
+playwright-tests/reports/
+playwright-tests/test-results/
+playwright-tests/node_modules/
+playwright-tests/.env
+playwright-tests/debug-screenshot.png
+
 # Third-party libraries and dependencies
 lib/
 libs/

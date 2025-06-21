@@ -1,0 +1,15 @@
+{
+  "name": "indexcopilot-form-testing",
+  "version": "1.0.0",
+  "description": "Comprehensive form testing for IndexCopilot",
+  "scripts": {
+    "discover": "node src/form-discovery.js",
+    "generate": "node src/test-generator.js",
+    "test": "playwright test",
+    "report": "playwright show-report",
+    "pipeline": "npm run discover && npm run generate && npm run test && npm run report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.40.0"
+  }
+}

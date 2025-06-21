@@ -105,6 +105,17 @@ IndexCopilot/
 ├── tests/
 │   ├── test_portfolio_manager.py # Unit tests for portfolio logic
 │   └── test_export_manager.py    # Unit tests for export functionality
+├── playwright-tests/
+│   ├── src/
+│   │   ├── form-discovery.js       # Smart form discovery crawler
+│   │   ├── test-generator.js       # Comprehensive test generator
+│   │   └── simple-discovery.js     # Simplified discovery script
+│   ├── package.json                # Playwright dependencies
+│   ├── playwright.config.js        # Test configuration
+│   ├── run-pipeline.js            # One-command test pipeline
+│   └── README.md                   # Form testing documentation
+├── .github/workflows/
+│   └── form-testing.yml           # CI/CD pipeline for form tests
 ├── app.py                      # Original monolithic app (legacy)
 ├── app_modular.py              # New modular app entry point
 ├── requirements.txt            # Python dependencies
@@ -114,7 +125,9 @@ IndexCopilot/
 
 ## Testing
 
-Run the test suite:
+### Unit Tests
+
+Run the Python unit test suite:
 
 ```bash
 # Run all tests
@@ -127,6 +140,36 @@ pytest tests/ -v
 pytest tests/test_portfolio_manager.py
 ```
 
+### Form Testing (Playwright)
+
+Comprehensive form testing with automatic discovery and security testing:
+
+```bash
+# Navigate to form testing directory
+cd playwright-tests
+
+# Install dependencies (one-time setup)
+npm install
+npx playwright install
+
+# Run complete form testing pipeline
+node run-pipeline.js
+
+# Or run individual steps
+node src/simple-discovery.js    # Discover forms
+node src/test-generator.js      # Generate tests
+npx playwright test             # Run tests
+npx playwright show-report      # View results
+```
+
+#### Form Testing Features
+- **Smart Discovery**: Automatically finds forms by crawling the application
+- **Security Testing**: XSS, SQL injection, and CSRF protection tests
+- **Cross-browser**: Tests on Chrome, Firefox, and Safari
+- **Comprehensive Coverage**: Validation, edge cases, and error handling
+- **Rich Reporting**: HTML reports with screenshots and videos
+- **CI/CD Ready**: Automated testing in GitHub Actions
+
 ## Development
 
 ### Key Components
@@ -134,6 +177,7 @@ pytest tests/test_portfolio_manager.py
 - **PortfolioManager**: Handles data persistence, validation, and calculations
 - **ExportManager**: Manages CSV and PDF export functionality
 - **Tab Components**: Modular UI components for each application section
+- **Form Testing Pipeline**: Automated discovery and testing of UI forms
 
 ### Adding New Features
 
@@ -141,6 +185,17 @@ pytest tests/test_portfolio_manager.py
 2. Create/update tab component
 3. Add unit tests
 4. Update main app routing
+5. Run form tests to ensure UI compatibility
+
+### Form Testing Pipeline
+
+The automated form testing system:
+1. **Discovers** forms by crawling the live application
+2. **Generates** comprehensive test suites for each form
+3. **Executes** tests across multiple browsers
+4. **Reports** results with detailed analysis
+
+Tests are automatically generated based on discovered form structure, ensuring coverage stays current with UI changes.
 
 ## License
 

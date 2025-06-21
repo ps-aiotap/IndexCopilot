@@ -1,0 +1,49 @@
+name: Form Testing Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  form-testing:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+    
+    - name: Install Python dependencies
+      run: pip install -r requirements.txt
+    
+    - name: Install Playwright
+      run: |
+        cd playwright-tests
+        npm install
+        npx playwright install --with-deps
+    
+    - name: Run Form Testing Pipeline
+      run: |
+        cd playwright-tests
+        node run-pipeline.js
+      timeout-minutes: 15
+    
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: form-test-results
+        path: |
+          playwright-tests/reports/
+          playwright-tests/generated/
+        retention-days: 30
