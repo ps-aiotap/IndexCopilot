@@ -49,17 +49,20 @@ def render_analytics_tab(portfolio_manager):
         cagr_df = holdings_df[['asset_name', 'asset_type', 'cagr', 'gain_loss']].copy()
         cagr_df = cagr_df.sort_values('cagr', ascending=False)
         
-        # Format CAGR display with colors
-        for idx, row in cagr_df.iterrows():
+        # Format CAGR display with colors - create once to avoid flickering
+        cagr_display_data = []
+        for _, row in cagr_df.iterrows():
             if row['cagr'] > 0:
-                cagr_df.at[idx, 'cagr_display'] = f":green[{row['cagr']:.2f}%]"
+                cagr_display_data.append(f":green[{row['cagr']:.2f}%]")
             elif row['cagr'] < 0:
-                cagr_df.at[idx, 'cagr_display'] = f":red[{row['cagr']:.2f}%]"
+                cagr_display_data.append(f":red[{row['cagr']:.2f}%]")
             else:
-                cagr_df.at[idx, 'cagr_display'] = f"{row['cagr']:.2f}%"
+                cagr_display_data.append(f"{row['cagr']:.2f}%")
+        
+        cagr_df['cagr_display'] = cagr_display_data
         
         st.dataframe(
-            cagr_df,
+            cagr_df[['asset_name', 'asset_type', 'cagr_display', 'gain_loss']],
             column_config={
                 "asset_name": st.column_config.TextColumn("Asset Name"),
                 "asset_type": st.column_config.TextColumn("Type"),
@@ -67,7 +70,7 @@ def render_analytics_tab(portfolio_manager):
                 "gain_loss": st.column_config.NumberColumn("Total Gain/Loss", format="₹%.2f"),
             },
             hide_index=True,
-            use_container_width=True,
+            use_container_width=True
         )
         
         # Performance insights

@@ -48,24 +48,30 @@ def render_summary_tab(portfolio_manager):
 
 def _display_holdings_table(holdings_df, portfolio_manager):
     """Display the holdings table with gain/loss calculations"""
+    # Create a copy to avoid modifying original data
+    display_df = holdings_df.copy()
+    
     # Add value and gain/loss columns
-    holdings_df["value"] = holdings_df["quantity"] * holdings_df["current_price"]
-    holdings_df["gain_loss"] = holdings_df.apply(
+    display_df["value"] = display_df["quantity"] * display_df["current_price"]
+    display_df["gain_loss"] = display_df.apply(
         lambda row: portfolio_manager.calculate_gain_loss(row.to_dict()), axis=1
     )
     
     # Create color-coded gain/loss display
-    for idx, row in holdings_df.iterrows():
+    gain_loss_display = []
+    for _, row in display_df.iterrows():
         if row['gain_loss'] > 0:
-            holdings_df.at[idx, 'gain_loss_display'] = f":green[▲ ₹{row['gain_loss']:,.2f}]"
+            gain_loss_display.append(f":green[▲ ₹{row['gain_loss']:,.2f}]")
         elif row['gain_loss'] < 0:
-            holdings_df.at[idx, 'gain_loss_display'] = f":red[▼ ₹{abs(row['gain_loss']):,.2f}]"
+            gain_loss_display.append(f":red[▼ ₹{abs(row['gain_loss']):,.2f}]")
         else:
-            holdings_df.at[idx, 'gain_loss_display'] = f"₹{row['gain_loss']:,.2f}"
+            gain_loss_display.append(f"₹{row['gain_loss']:,.2f}")
+    
+    display_df['gain_loss_display'] = gain_loss_display
 
     # Display table
     st.dataframe(
-        holdings_df,
+        display_df,
         column_config={
             "asset_id": st.column_config.TextColumn("Asset ID"),
             "asset_name": st.column_config.TextColumn("Asset Name"),
@@ -89,6 +95,10 @@ def _display_asset_allocation_chart(holdings_df, total_value):
     # Center the chart with limited width
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
+        # Ensure value column exists
+        if "value" not in holdings_df.columns:
+            holdings_df["value"] = holdings_df["quantity"] * holdings_df["current_price"]
+        
         # Group by asset type
         asset_allocation = holdings_df.groupby("asset_type")["value"].sum()
         

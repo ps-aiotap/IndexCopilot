@@ -26,7 +26,7 @@ IndexCopilot is a Streamlit-based application that helps users manage and visual
 - **Sidebar Stats**: Quick portfolio overview and settings
 - **Color-coded Display**: Green/red indicators for gains and losses
 - **Responsive Layout**: Organized tabs with centered charts and proper spacing
-- **Dark Mode Toggle**: Basic theme switching capability
+- **Clean Interface**: Professional, distraction-free design
 
 ## Installation
 

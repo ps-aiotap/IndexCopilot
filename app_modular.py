@@ -29,24 +29,7 @@ if "portfolio" not in st.session_state:
         st.error(f"Error loading portfolio: {str(e)}")
         st.session_state.portfolio = {"name": "My Portfolio", "holdings": []}
 
-# Sidebar for settings
-with st.sidebar:
-    st.header("Settings")
-    
-    # Dark mode toggle (note: limited support in Streamlit)
-    dark_mode = st.toggle("🌙 Dark Mode", value=False)
-    if dark_mode:
-        st.info("💡 Dark mode is enabled. Note: Streamlit has limited dark mode support.")
-    
-    st.markdown("---")
-    
-    # Quick stats in sidebar
-    if st.session_state.portfolio["holdings"]:
-        st.subheader("Quick Stats")
-        total_holdings = len(st.session_state.portfolio["holdings"])
-        total_value = sum(h["quantity"] * h["current_price"] for h in st.session_state.portfolio["holdings"])
-        st.metric("Holdings", total_holdings)
-        st.metric("Portfolio Value", f"₹{total_value:,.0f}")
+# Remove sidebar - it's redundant with main content
 
 # App title and description
 st.title("IndexCopilot")
