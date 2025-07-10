@@ -1,0 +1,11 @@
+asset_type,asset_id,asset_name,quantity,purchase_price,purchase_date
+Mutual Fund,HDFC123,HDFC Nifty 50 Index Fund,100,150.0,2023-01-15
+Equity,RELIANCE,Reliance Industries Ltd,10,2000.0,2023-02-20
+Equity,TCS,Tata Consultancy Services,5,3200.0,2023-03-10
+Insurance,LIC001,LIC Term Plan,1,50000.0,2023-01-01
+Mutual Fund,SBI456,SBI Small Cap Fund,200,75.0,2023-04-05
+Equity,INFY,Infosys Limited,15,1500.0,2023-05-12
+Equity,HDFCBANK,HDFC Bank Ltd,8,1600.0,2023-06-18
+Mutual Fund,AXIS789,Axis Bluechip Fund,150,120.0,2023-07-22
+Equity,ITC,ITC Limited,25,400.0,2023-08-30
+Insurance,ICICI002,ICICI Prudential Life,2,25000.0,2023-09-15

@@ -1,10 +1,10 @@
 # IndexCopilot
 
-A simple portfolio manager.
+A professional portfolio management system with real-time analytics, intelligent data validation, and automated testing. Built with Streamlit, it handles everything from CSV imports to institutional-level financial calculations and professional PDF reporting.
 
 ## Overview
 
-IndexCopilot is a Streamlit-based application that helps users manage and visualize their investment portfolios. The application provides a clean interface for tracking mutual funds, equities, and other investments.
+IndexCopilot transforms raw portfolio data into actionable insights with CAGR calculations, gain/loss tracking, and interactive visualizations - all backed by comprehensive automated testing that ensures reliability.
 
 ## Features
 
@@ -28,33 +28,26 @@ IndexCopilot is a Streamlit-based application that helps users manage and visual
 - **Responsive Layout**: Organized tabs with centered charts and proper spacing
 - **Clean Interface**: Professional, distraction-free design
 
-## Installation
+## Quick Start
 
-1. Clone the repository:
+```bash
+# Clone and install
+git clone https://github.com/yourusername/IndexCopilot.git
+cd IndexCopilot
+pip install -r requirements.txt
 
-   ```
-   git clone https://github.com/yourusername/IndexCopilot.git
-   cd IndexCopilot
-   ```
+# Run the application
+streamlit run app_modular.py
+```
 
-2. Install dependencies:
-   ```
-   pip install -r requirements.txt
-   ```
+Open `http://localhost:8501` and start managing your portfolio.
 
-## Usage
+## Sample Use Cases
 
-1. Run the Streamlit application:
-
-   ```
-   # Run the new modular version (recommended)
-   streamlit run app_modular.py
-   
-   # Or run the original version
-   streamlit run app.py
-   ```
-
-2. Open your browser and navigate to `http://localhost:8501`
+- **Upload portfolio CSV** → Get instant validation and real-time analytics
+- **Track performance** → View CAGR, gain/loss indicators, and asset allocation
+- **Generate reports** → Export professional PDF reports for stakeholders
+- **Automated testing** → Built-in form testing ensures reliability across updates
 
 3. Add holdings to your portfolio:
    - **Upload CSV**: Use the sample CSV download or follow the format guide
@@ -70,24 +63,23 @@ IndexCopilot is a Streamlit-based application that helps users manage and visual
    - **Auto-save**: Portfolio automatically loads on startup
    - **Settings**: Access dark mode and quick stats in sidebar
 
-## CSV Format
+## Technology Stack
 
-When uploading a CSV file, use the following format:
+- **Frontend**: Streamlit for responsive web interface
+- **Data Processing**: Pandas for robust validation and calculations
+- **Visualization**: Matplotlib for interactive charts and asset allocation
+- **Reporting**: ReportLab for professional PDF generation
+- **Testing**: Playwright for automated form discovery and security testing
+- **Architecture**: Modular design with clean separation of concerns
 
-```
+## CSV Data Format
+
+```csv
 asset_type,asset_id,asset_name,quantity,purchase_price,purchase_date
-mutual_fund,HDFC123,HDFC Nifty 50 Index Fund,100,150.0,2023-01-15
-equity,RELIANCE,Reliance Industries Ltd,10,2500.0,2023-02-20
+Mutual Fund,HDFC123,HDFC Nifty 50 Index Fund,100,150.0,2023-01-15
+Equity,RELIANCE,Reliance Industries Ltd,10,2000.0,2023-02-20
+Insurance,LIC001,LIC Term Plan,1,50000.0,2023-01-01
 ```
-
-Required columns:
-
-- `asset_type`: Type of asset (mutual_fund, equity, insurance)
-- `asset_id`: Fund code or stock symbol
-- `asset_name`: Name of the asset
-- `quantity`: Number of units
-- `purchase_price`: Price per unit at purchase
-- `purchase_date`: Date of purchase (YYYY-MM-DD)
 
 ## Project Structure
 
@@ -162,13 +154,12 @@ npx playwright test             # Run tests
 npx playwright show-report      # View results
 ```
 
-#### Form Testing Features
-- **Smart Discovery**: Automatically finds forms by crawling the application
-- **Security Testing**: XSS, SQL injection, and CSRF protection tests
-- **Cross-browser**: Tests on Chrome, Firefox, and Safari
-- **Comprehensive Coverage**: Validation, edge cases, and error handling
-- **Rich Reporting**: HTML reports with screenshots and videos
-- **CI/CD Ready**: Automated testing in GitHub Actions
+#### Automated Testing Pipeline
+- **Form Discovery**: Automatically maps application forms and inputs
+- **Security Testing**: XSS, SQL injection, and CSRF protection validation
+- **Cross-browser**: Chrome, Firefox, and Safari compatibility testing
+- **Self-updating**: Tests adapt automatically when UI changes
+- **CI/CD Integration**: GitHub Actions workflow for continuous testing
 
 ## Development
 
@@ -187,15 +178,30 @@ npx playwright show-report      # View results
 4. Update main app routing
 5. Run form tests to ensure UI compatibility
 
-### Form Testing Pipeline
+### How It Works
 
-The automated form testing system:
-1. **Discovers** forms by crawling the live application
-2. **Generates** comprehensive test suites for each form
-3. **Executes** tests across multiple browsers
-4. **Reports** results with detailed analysis
+1. **Data Import** → Intelligent CSV validation with real-time error checking
+2. **Analytics Engine** → CAGR calculations, gain/loss tracking, performance metrics
+3. **Visualization** → Interactive charts, asset allocation, professional dashboards
+4. **Export System** → PDF reports with proper formatting and currency symbols
+5. **Testing Layer** → Automated form discovery and comprehensive security validation
 
-Tests are automatically generated based on discovered form structure, ensuring coverage stays current with UI changes.
+## Configuration Example
+
+```python
+# Add custom asset types in src/utils/portfolio_manager.py
+VALID_ASSET_TYPES = [
+    "Mutual Fund", "Equity", "Insurance", 
+    "Bonds", "ETF", "Crypto"  # Add new types here
+]
+
+# Customize CAGR calculation periods
+CAGR_PERIODS = {
+    "short_term": 1,    # 1 year
+    "medium_term": 3,   # 3 years  
+    "long_term": 5      # 5 years
+}
+```
 
 ## License
 

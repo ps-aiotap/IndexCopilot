@@ -12,7 +12,7 @@ def render_add_holdings_tab(portfolio_manager):
     if method == "Upload CSV":
         _render_csv_upload(portfolio_manager)
     else:
-        _render_manual_entry()
+        _render_manual_entry(portfolio_manager)
 
 
 def _render_csv_upload(portfolio_manager):
@@ -33,6 +33,8 @@ def _render_csv_upload(portfolio_manager):
     }
     
     sample_df = pd.DataFrame(sample_data)
+    # Reset index to start from 1
+    sample_df.index = range(1, len(sample_df) + 1)
     st.dataframe(sample_df, use_container_width=True)
     
     # Download sample CSV button
@@ -60,22 +62,33 @@ def _render_csv_upload(portfolio_manager):
             # Convert to list of dictionaries
             holdings = holdings_df.to_dict(orient="records")
 
-            # Add current_price equal to purchase_price for now
+            # Add current_price with random variation for demo
+            import random
             for holding in holdings:
-                holding["current_price"] = holding["purchase_price"]
+                # Add random variation: -20% to +30% for realistic demo
+                variation = random.uniform(-0.20, 0.30)
+                holding["current_price"] = round(holding["purchase_price"] * (1 + variation), 2)
                 # Ensure purchase_date is string
                 if "purchase_date" in holding:
                     holding["purchase_date"] = str(holding["purchase_date"])
 
             # Update session state
             st.session_state.portfolio["holdings"] = holdings
+            
+            # Auto-save to JSON file
+            try:
+                portfolio_manager.save_portfolio(st.session_state.portfolio)
+            except Exception as save_error:
+                st.warning(f"Data loaded but auto-save failed: {str(save_error)}")
+            
             st.success(f"✓ Successfully loaded {len(holdings)} holdings from CSV!")
+            st.rerun()  # Force refresh to show new data
             
         except Exception as e:
             st.error(f"❌ Error loading CSV: {str(e)}")
 
 
-def _render_manual_entry():
+def _render_manual_entry(portfolio_manager):
     """Render manual entry form"""
     st.write("Add a holding manually")
 
@@ -109,6 +122,14 @@ def _render_manual_entry():
 
                 # Add to session state
                 st.session_state.portfolio["holdings"].append(new_holding)
+                
+                # Auto-save to JSON file
+                try:
+                    portfolio_manager.save_portfolio(st.session_state.portfolio)
+                except Exception as save_error:
+                    st.warning(f"Holding added but auto-save failed: {str(save_error)}")
+                
                 st.success(f"✓ Successfully added {asset_name} to portfolio!")
+                st.rerun()  # Force refresh to show new data
             else:
                 st.error("Please fill in all required fields")

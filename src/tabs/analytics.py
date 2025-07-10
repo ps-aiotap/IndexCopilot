@@ -7,7 +7,8 @@ def render_analytics_tab(portfolio_manager):
     st.subheader("Analytics")
     
     if st.session_state.portfolio["holdings"]:
-        holdings_df = pd.DataFrame(st.session_state.portfolio["holdings"])
+        # Create fresh dataframe from current session state
+        holdings_df = pd.DataFrame(st.session_state.portfolio["holdings"]).copy()
         holdings_df["value"] = holdings_df["quantity"] * holdings_df["current_price"]
         holdings_df["gain_loss"] = holdings_df.apply(
             lambda row: portfolio_manager.calculate_gain_loss(row.to_dict()), axis=1
@@ -22,11 +23,13 @@ def render_analytics_tab(portfolio_manager):
             ), axis=1
         )
         
-        # Portfolio performance metrics
+        # Portfolio performance metrics - recalculate from fresh data
         col1, col2, col3, col4 = st.columns(4)
         
-        total_investment = sum(h["quantity"] * h["purchase_price"] for h in st.session_state.portfolio["holdings"])
-        total_current_value = sum(h["quantity"] * h["current_price"] for h in st.session_state.portfolio["holdings"])
+        # Recalculate totals from current holdings
+        current_holdings = st.session_state.portfolio["holdings"]
+        total_investment = sum(h["quantity"] * h["purchase_price"] for h in current_holdings)
+        total_current_value = sum(h["quantity"] * h["current_price"] for h in current_holdings)
         total_gain_loss = total_current_value - total_investment
         gain_loss_percentage = (total_gain_loss / total_investment) * 100 if total_investment > 0 else 0
         
@@ -53,9 +56,9 @@ def render_analytics_tab(portfolio_manager):
         cagr_display_data = []
         for _, row in cagr_df.iterrows():
             if row['cagr'] > 0:
-                cagr_display_data.append(f":green[{row['cagr']:.2f}%]")
+                cagr_display_data.append(f"{row['cagr']:.2f}%")
             elif row['cagr'] < 0:
-                cagr_display_data.append(f":red[{row['cagr']:.2f}%]")
+                cagr_display_data.append(f"{row['cagr']:.2f}%")
             else:
                 cagr_display_data.append(f"{row['cagr']:.2f}%")
         

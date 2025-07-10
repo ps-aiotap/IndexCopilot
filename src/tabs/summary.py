@@ -61,9 +61,9 @@ def _display_holdings_table(holdings_df, portfolio_manager):
     gain_loss_display = []
     for _, row in display_df.iterrows():
         if row['gain_loss'] > 0:
-            gain_loss_display.append(f":green[▲ ₹{row['gain_loss']:,.2f}]")
+            gain_loss_display.append(f"▲ ₹{row['gain_loss']:,.2f}")
         elif row['gain_loss'] < 0:
-            gain_loss_display.append(f":red[▼ ₹{abs(row['gain_loss']):,.2f}]")
+            gain_loss_display.append(f"▼ ₹{abs(row['gain_loss']):,.2f}")
         else:
             gain_loss_display.append(f"₹{row['gain_loss']:,.2f}")
     
