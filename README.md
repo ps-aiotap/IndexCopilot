@@ -31,7 +31,7 @@ IndexCopilot transforms raw portfolio data into actionable insights with CAGR ca
 ## Demo
 
 ▶️ [Watch the demo](https://www.loom.com/share/46d0423ca6cb462e91ce86a7cc565f04)  
-This short video walks through the main features, including
+This short video walks through the main features
 
 ## Quick Start
 
