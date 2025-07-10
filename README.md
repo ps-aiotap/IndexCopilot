@@ -28,6 +28,11 @@ IndexCopilot transforms raw portfolio data into actionable insights with CAGR ca
 - **Responsive Layout**: Organized tabs with centered charts and proper spacing
 - **Clean Interface**: Professional, distraction-free design
 
+## Demo
+
+▶️ [Watch the demo](https://www.loom.com/share/46d0423ca6cb462e91ce86a7cc565f04)  
+This short video walks through the main features, including
+
 ## Quick Start
 
 ```bash
